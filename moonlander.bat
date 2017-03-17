@@ -1,0 +1,64 @@
+@ECHO OFF
+REM Copyright 2017 Gareth McNicol
+REM  
+REM Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), REM to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, REM and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+REM
+REM The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+REM
+REM THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, REM FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER REM LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER REM DEALINGS IN THE SOFTWARE.
+
+:INIT
+ECHO "Moonlander"
+CLS
+SET TURNS=0
+SET HEIGHT=500
+SET VELOCITY=50
+SET FUEL=120
+:THE_START
+ECHO TIME %TURNS% - HEIGHT %HEIGHT% - VELOCITY %VELOCITY% - FUEL %FUEL%
+
+IF %FUEL% EQU 0 (
+    SET BURN=0
+    GOTO AUTO_BURN
+)
+
+SET "BURN="
+SET /P BURN=Burn? (0-30):
+IF /I "%BURN%"=="" SET BURN=0
+
+IF /I %BURN%==Q (
+    GOTO EOF
+)
+
+
+echo %BURN% | findstr /r "^[0-9]*$">nul
+
+if %errorlevel% equ 0 GOTO THE_START
+
+IF %BURN% LSS 0  SET BURN=0
+IF %BURN% GTR 30 SET BURN=30
+
+:AUTO_BURN
+IF %BURN% GTR %FUEL% SET BURN=%FUEL%
+
+SET /A NEW_VELOCITY= %VELOCITY%-%BURN%+5
+SET /A FUEL=%FUEL%-%BURN%
+
+SET /A DECENT = (%NEW_VELOCITY%+%VELOCITY%)/2
+IF %DECENT% GEQ %HEIGHT% GOTO END
+
+SET /A HEIGHT=%HEIGHT%-%DECENT%
+SET VELOCITY=%NEW_VELOCITY%
+SET /A TURNS+=1
+SET BURN=
+GOTO THE_START
+
+:END
+SET /A FINAL_VELOCITY=%VELOCITY%+(5-%BURN%)
+IF %FINAL_VELOCITY% GEQ 5 ECHO YOU CRASHED-ALL DEAD
+IF %FINAL_VELOCITY% LEQ 5 IF %FINAL_VELOCITY% GTR 1 ECHO OK-BUT SOME INJURIES
+IF %FINAL_VELOCITY% LEQ 1 ECHO GOOD LANDING
+PAUSE
+
+GOTO INIT
+:EOF
